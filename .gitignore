@@ -1,0 +1,4 @@
+# shop3d is a standalone project living here for convenience only —
+# it has its own repo/lifecycle and shares no code, build, or deploy
+# with this one.
+/shop3d/
