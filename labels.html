@@ -87,6 +87,19 @@
     flex-shrink: 0;
   }
 
+  .label .frame {
+    padding: 6mm 8mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4mm;
+    border-radius: 4mm;
+    border: 2pt solid transparent;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(135deg, var(--accent), var(--accent-2)) border-box;
+  }
+
   .label .tag {
     font-size: 9pt;
     letter-spacing: 1.5px;
@@ -147,9 +160,11 @@
     const label = document.createElement('div');
     label.className = 'label';
     label.innerHTML = `
-      <span class="tag">RC ROBOT CAR</span>
-      <h2>足球機器人<span class="accent">材料包</span></h2>
-      <p>操控自走車，把乒乓球踢進球門</p>
+      <div class="frame">
+        <span class="tag">RC ROBOT CAR</span>
+        <h2>足球機器人<span class="accent">材料包</span></h2>
+        <p>操控自走車，把乒乓球踢進球門</p>
+      </div>
     `;
     page.appendChild(label);
   }
