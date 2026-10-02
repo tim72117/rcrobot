@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>足球機器人標籤貼紙</title>
+<style>
+  :root {
+    --ink: #0d1420;
+    --accent: #0a92b0;
+    --accent-2: #d9503a;
+    --paper: #ffffff;
+    --dim: #5a6a78;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #e9edf0;
+    font-family: "Segoe UI", "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    padding: 24px;
+  }
+  .toolbar {
+    max-width: 210mm;
+    margin: 0 auto 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .toolbar h1 {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .toolbar p {
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+  .hint {
+    font-size: 0.78rem;
+    color: var(--dim);
+    background: #fff;
+    border: 1px solid #d7dee3;
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-width: 320px;
+  }
+  .print-btn {
+    flex-shrink: 0;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .print-btn:hover { opacity: 0.85; }
+
+  /* A4 = 210 x 297mm, grid of 2 cols x 4 rows, each cell 105 x 74.3mm (no gap, no margin — matches standard 8-up label sheets) */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--paper);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+    display: grid;
+    grid-template-columns: 105mm 105mm;
+    grid-template-rows: 74.3mm 74.3mm 74.3mm 74.3mm;
+    justify-content: center;
+  }
+
+  .label {
+    width: 105mm;
+    height: 74.3mm;
+    border: 1pt dashed #b9c2c8;
+    padding: 8mm 10mm 6mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5mm;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .label::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 3mm;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+
+  .label .tag {
+    display: inline-block;
+    font-size: 9pt;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    font-weight: 700;
+    border: 1pt solid var(--accent);
+    border-radius: 999px;
+    padding: 2pt 10pt;
+  }
+
+  .label h2 {
+    font-size: 22pt;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.25;
+  }
+  .label h2 .accent {
+    color: var(--accent-2);
+  }
+
+  .label p {
+    font-size: 9.5pt;
+    color: var(--dim);
+    line-height: 1.4;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    .page {
+      box-shadow: none;
+      margin: 0;
+      page-break-after: always;
+    }
+    .label { border: 1pt dashed #999; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div>
+    <h1>足球機器人標籤貼紙 — 105 × 74.3mm</h1>
+    <p>A4 一頁 8 格（2 欄 × 4 行）</p>
+  </div>
+  <div class="hint">列印時紙張選 A4，邊界設為「無」，縮放比例 100%（不要勾選「符合頁面大小」），才能對齊 74.3×105mm 的標籤紙。</div>
+  <button class="print-btn" id="printBtn">列印</button>
+</div>
+
+<div class="page" id="page"></div>
+
+<script>
+  const page = document.getElementById('page');
+  const COUNT = 8;
+
+  for (let i = 0; i < COUNT; i++) {
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.innerHTML = `
+      <span class="tag">RC ROBOT CAR</span>
+      <h2>足球機器人<span class="accent">材料包</span></h2>
+      <p>操控自走車，把乒乓球踢進球門</p>
+    `;
+    page.appendChild(label);
+  }
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+</script>
+
+</body>
+</html>

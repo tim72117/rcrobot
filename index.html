@@ -180,6 +180,66 @@
     transform: translateY(-2px);
   }
 
+  .qr-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 4;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: background 0.2s, transform 0.2s;
+  }
+  .qr-btn:hover {
+    background: var(--surface-strong);
+    transform: translateY(-2px);
+  }
+
+  .qr-panel {
+    position: absolute;
+    bottom: 96px;
+    right: 30px;
+    z-index: 4;
+    background: rgba(19, 28, 43, 0.97);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    text-align: center;
+  }
+  .qr-panel.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .qr-panel #qrcode {
+    background: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    line-height: 0;
+  }
+  .qr-panel p {
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    word-break: break-all;
+    max-width: 160px;
+  }
+
   .rules-btn {
     position: absolute;
     bottom: 50px;
@@ -359,8 +419,15 @@
     <button class="back-btn" id="bubbleBack">返回</button>
   </div>
 
+  <button class="qr-btn" id="qrBtn" aria-label="顯示網站 QR Code">⬜</button>
+  <div class="qr-panel" id="qrPanel">
+    <div id="qrcode"></div>
+    <p>掃描分享這個網站</p>
+  </div>
+
 </section>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function () {
@@ -693,6 +760,28 @@
   window.addEventListener('mousemove', () => { if (isDragging) dragMoved = true; });
   container.addEventListener('click', () => {
     if (!dragMoved) bubble.classList.add('show');
+  });
+
+  // QR code: links to this site's GitHub Pages URL so it can be scanned
+  // and shared. Generated once on load (qrcodejs draws into #qrcode).
+  const qrBtn = document.getElementById('qrBtn');
+  const qrPanel = document.getElementById('qrPanel');
+  const siteUrl = 'https://tim72117.github.io/rcrobot/';
+  new QRCode(document.getElementById('qrcode'), {
+    text: siteUrl,
+    width: 140,
+    height: 140,
+    colorDark: '#0d1420',
+    colorLight: '#ffffff',
+  });
+  qrBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    qrPanel.classList.toggle('show');
+  });
+  document.addEventListener('click', (e) => {
+    if (qrPanel.classList.contains('show') && !qrPanel.contains(e.target) && e.target !== qrBtn) {
+      qrPanel.classList.remove('show');
+    }
   });
 })();
 </script>
