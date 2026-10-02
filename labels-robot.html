@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>足球機器人標籤貼紙（含機器人圖）</title>
+<style>
+  :root {
+    --ink: #0d1420;
+    --accent: #0a92b0;
+    --accent-2: #d9503a;
+    --paper: #ffffff;
+    --dim: #5a6a78;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #e9edf0;
+    font-family: "Segoe UI", "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    padding: 24px;
+  }
+  .toolbar {
+    max-width: 210mm;
+    margin: 0 auto 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .toolbar h1 {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .toolbar p {
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+  .hint {
+    font-size: 0.78rem;
+    color: var(--dim);
+    background: #fff;
+    border: 1px solid #d7dee3;
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-width: 320px;
+  }
+  .print-btn {
+    flex-shrink: 0;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .print-btn:hover { opacity: 0.85; }
+
+  /* A4 = 210 x 297mm, 2 cols x 4 rows, each cell 105 x 74.3mm (no gap, no margin — matches standard 8-up label sheets) */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: var(--paper);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+  }
+
+  .label {
+    width: 105mm;
+    height: 74.3mm;
+    padding: 6mm 9mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .label .car-img {
+    flex-shrink: 0;
+    width: 50mm;
+    height: 50mm;
+    object-fit: contain;
+  }
+
+  .label .frame {
+    width: 100%;
+    height: 100%;
+    padding: 3mm 6mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1mm;
+    border-radius: 4mm;
+    border: 2pt solid transparent;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(135deg, var(--accent), var(--accent-2)) border-box;
+  }
+
+  .label .text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .label h2 {
+    font-size: 26pt;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+  .label h2 .accent {
+    color: var(--accent-2);
+  }
+
+  .label p {
+    font-size: 8.5pt;
+    color: var(--dim);
+    line-height: 1.4;
+  }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    .page {
+      box-shadow: none;
+      margin: 0;
+      page-break-after: always;
+      break-after: page;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div>
+    <h1>足球機器人標籤貼紙（含機器人圖）— 105 × 74.3mm</h1>
+    <p>A4 一頁 8 格（2 欄 × 4 行），每格附與首頁一致的 3D 機器人車圖像</p>
+  </div>
+  <div class="hint">列印時紙張選 A4，邊界設為「無」，縮放比例 100%（不要勾選「符合頁面大小」），才能對齊 74.3×105mm 的標籤紙。</div>
+  <button class="print-btn" id="printBtn">列印</button>
+</div>
+
+<div class="page" id="page"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // Render the robot car once into an offscreen WebGL canvas, matching the
+  // model on the main landing page, then reuse the snapshot as a plain
+  // <img> in every label. A single PNG prints reliably; eight live WebGL
+  // canvases would not survive the print pipeline consistently.
+  function renderCarImage() {
+    const size = 600;
+    const canvas = document.createElement('canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(2);
+    renderer.setSize(size, size, false);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+    camera.position.set(3.4, 2.1, 5.2);
+    camera.lookAt(-1.0, 1.0, 0.5);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xcfe0ea, 0.9);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xfff6e0, 1.5);
+    key.position.set(5, 8, 5);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.7);
+    fill.position.set(-3, 6, 6);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xff6b5e, 0.35);
+    rim.position.set(-6, 3, -4);
+    scene.add(rim);
+
+    const car = new THREE.Group();
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1b3a6b, metalness: 0.5, roughness: 0.35 });
+    const accentMat = new THREE.MeshStandardMaterial({ color: 0x00e0ff, emissive: 0x00465a, metalness: 0.4, roughness: 0.3 });
+    const darkMat = new THREE.MeshStandardMaterial({ color: 0x0d1117, metalness: 0.3, roughness: 0.7 });
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x88e0ff, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.7 });
+    const redMat = new THREE.MeshStandardMaterial({ color: 0xff5f6d, emissive: 0x5a1015 });
+
+    const chassis = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.6, 2.0), bodyMat);
+    car.add(chassis);
+
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(3.22, 0.15, 0.3), accentMat);
+    stripe.position.set(0, 0.05, 0);
+    car.add(stripe);
+
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 1.6), bodyMat);
+    cabin.position.set(-0.3, 0.55, 0);
+    car.add(cabin);
+
+    const dome = new THREE.Mesh(
+      new THREE.SphereGeometry(0.35, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+      glassMat
+    );
+    dome.position.set(0.7, 0.8, 0);
+    car.add(dome);
+
+    const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.15, 16), darkMat);
+    lens.rotation.z = Math.PI / 2;
+    lens.position.set(1.68, 0.3, 0);
+    car.add(lens);
+    const lensGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.02, 16), accentMat);
+    lensGlass.rotation.z = Math.PI / 2;
+    lensGlass.position.set(1.76, 0.3, 0);
+    car.add(lensGlass);
+
+    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.0, 8), darkMat);
+    antenna.position.set(-0.9, 1.15, 0.5);
+    antenna.rotation.z = 0.2;
+    car.add(antenna);
+    const antennaTip = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), redMat);
+    antennaTip.position.set(-1.0, 1.6, 0.5);
+    car.add(antennaTip);
+
+    [-0.35, 0.35].forEach((z) => {
+      const eye = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 12), accentMat);
+      eye.rotation.z = Math.PI / 2;
+      eye.position.set(1.62, -0.05, z);
+      car.add(eye);
+    });
+
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111418, roughness: 0.9, metalness: 0.1 });
+    const hubMat = new THREE.MeshStandardMaterial({ color: 0x00e0ff, emissive: 0x003a44 });
+
+    function makeWheel(radius, width, hubRadius) {
+      const wheelGroup = new THREE.Group();
+      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, 20), wheelMat);
+      wheel.rotation.x = Math.PI / 2;
+      wheelGroup.add(wheel);
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(hubRadius, hubRadius, width + 0.02, 12), hubMat);
+      hub.rotation.x = Math.PI / 2;
+      wheelGroup.add(hub);
+      return wheelGroup;
+    }
+
+    // Three-wheel layout: single steering wheel centered at the front,
+    // two drive wheels at the rear.
+    const frontWheel = makeWheel(0.55, 0.4, 0.2);
+    frontWheel.position.set(1.3, -0.35, 0);
+    car.add(frontWheel);
+
+    [[-1.1, -0.35, 1.15], [-1.1, -0.35, -1.15]].forEach((pos) => {
+      const wheelGroup = makeWheel(0.55, 0.4, 0.2);
+      wheelGroup.position.set(...pos);
+      car.add(wheelGroup);
+    });
+
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x22c6f0, transparent: true, opacity: 0.85 });
+    car.traverse((obj) => {
+      if (obj.isMesh) {
+        const edges = new THREE.EdgesGeometry(obj.geometry, 20);
+        obj.add(new THREE.LineSegments(edges, edgeMat));
+      }
+    });
+
+    car.position.set(-0.6, 0.4, 0);
+    car.rotation.y = 0.25;
+    scene.add(car);
+
+    // --- Figure (person holding the controller), standing left of the car ---
+    const figure = new THREE.Group();
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0x9c5f34, roughness: 1, metalness: 0 });
+    const shirtMat = new THREE.MeshStandardMaterial({ color: 0x2f6f8f, roughness: 0.6 });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1c2733, roughness: 0.7 });
+    const figCtrlMat = new THREE.MeshStandardMaterial({ color: 0x0d1117, metalness: 0.4, roughness: 0.4 });
+    const figBtnMat = new THREE.MeshStandardMaterial({ color: 0x00e0ff, emissive: 0x004a55 });
+
+    const legGeo = new THREE.CylinderGeometry(0.16, 0.16, 1.1, 12);
+    [-0.18, 0.18].forEach((x) => {
+      const leg = new THREE.Mesh(legGeo, pantsMat);
+      leg.position.set(x, 0.55, 0);
+      figure.add(leg);
+    });
+
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.9, 12), shirtMat);
+    torso.position.set(0, 1.55, 0);
+    figure.add(torso);
+
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.18, 10), skinMat);
+    neck.position.set(0, 2.09, 0);
+    figure.add(neck);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), skinMat);
+    head.position.set(0, 2.48, 0);
+    figure.add(head);
+    const headEdge = new THREE.LineSegments(
+      new THREE.EdgesGeometry(head.geometry, 1),
+      new THREE.LineBasicMaterial({ color: 0x3a2a1a, transparent: true, opacity: 0.4 })
+    );
+    head.add(headEdge);
+
+    const armGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.65, 10);
+    [-0.42, 0.42].forEach((x) => {
+      const arm = new THREE.Mesh(armGeo, shirtMat);
+      arm.position.set(x, 1.5, 0.2);
+      arm.rotation.x = -Math.PI / 5;
+      figure.add(arm);
+    });
+
+    const controller = new THREE.Group();
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.12), figCtrlMat);
+    controller.add(pad);
+    const btnGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.05, 12);
+    [[-0.16, 0.16], [0.16, 0.16], [-0.16, -0.16], [0.16, -0.16]].forEach(([x, y]) => {
+      const btn = new THREE.Mesh(btnGeo, figBtnMat);
+      btn.rotation.x = Math.PI / 2;
+      btn.position.set(x, y, 0.09);
+      controller.add(btn);
+    });
+    controller.rotation.x = -Math.PI / 2;
+    controller.position.set(0, 1.22, 0.4);
+    figure.add(controller);
+
+    figure.position.set(-2.9, 0, 1.6);
+    figure.rotation.y = 1.15;
+    figure.scale.setScalar(1.3);
+    scene.add(figure);
+
+    renderer.render(scene, camera);
+    const dataUrl = canvas.toDataURL('image/png');
+    renderer.dispose();
+    return dataUrl;
+  }
+
+  const page = document.getElementById('page');
+  const COUNT = 8;
+  const carImg = renderCarImage();
+
+  for (let i = 0; i < COUNT; i++) {
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.innerHTML = `
+      <div class="frame">
+        <div class="text">
+          <h2>足球<span class="accent">機器人</span></h2>
+        </div>
+        <img class="car-img" src="${carImg}" alt="">
+      </div>
+    `;
+    page.appendChild(label);
+  }
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+</script>
+
+</body>
+</html>
