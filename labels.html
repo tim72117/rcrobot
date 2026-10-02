@@ -60,24 +60,22 @@
   }
   .print-btn:hover { opacity: 0.85; }
 
-  /* A4 = 210 x 297mm, grid of 2 cols x 4 rows, each cell 105 x 74.3mm (no gap, no margin — matches standard 8-up label sheets) */
+  /* A4 = 210 x 297mm, 2 cols x 4 rows, each cell 105 x 74.3mm (no gap, no margin — matches standard 8-up label sheets) */
   .page {
     width: 210mm;
-    height: 297mm;
+    min-height: 297mm;
     margin: 0 auto;
     background: var(--paper);
     box-shadow: 0 2px 16px rgba(0,0,0,0.12);
-    display: grid;
-    grid-template-columns: 105mm 105mm;
-    grid-template-rows: 74.3mm 74.3mm 74.3mm 74.3mm;
-    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
   }
 
   .label {
     width: 105mm;
     height: 74.3mm;
-    border: 1pt dashed #b9c2c8;
-    padding: 8mm 10mm 6mm;
+    padding: 8mm 10mm;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -86,25 +84,14 @@
     position: relative;
     overflow: hidden;
     text-align: center;
-  }
-  .label::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 3mm;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    flex-shrink: 0;
   }
 
   .label .tag {
-    display: inline-block;
     font-size: 9pt;
     letter-spacing: 1.5px;
     color: var(--accent);
     font-weight: 700;
-    border: 1pt solid var(--accent);
-    border-radius: 999px;
-    padding: 2pt 10pt;
   }
 
   .label h2 {
@@ -124,14 +111,18 @@
   }
 
   @media print {
+    @page {
+      size: A4;
+      margin: 0;
+    }
     body { background: #fff; padding: 0; }
     .toolbar { display: none; }
     .page {
       box-shadow: none;
       margin: 0;
       page-break-after: always;
+      break-after: page;
     }
-    .label { border: 1pt dashed #999; }
   }
 </style>
 </head>
